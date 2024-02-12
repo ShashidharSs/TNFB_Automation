@@ -15,7 +15,6 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [getExcelData, setGetExcelData] = useState([]);
-  const [filterData, setFilterData] = useState([]);
   const [showProduct, setShowProduct] = useState('');
   const [showModule, setShowModule] = useState('');
   const [finalData, setFinalData] = useState([]);
@@ -23,7 +22,7 @@ const Dashboard = () => {
   const [uniqueExecute, setUniqueExecute] = useState('');
   const [globalSearch, setGlobalSearch] = useState('');
   const uniqueProductValues = uniqValues(getExcelData, 'product');
-  const uniqueModuleValues = uniqValues(filterData, 'module');
+  const uniqueModuleValues = uniqValues(finalData, 'module');
 
   useEffect(() => {
     const excelDataQuery = async () => {
@@ -55,22 +54,24 @@ const Dashboard = () => {
   const handleProductChange = (e) => {
     const selectedProduct = e.target.value;
     setShowProduct(selectedProduct);
-    setShowModule('')
+    setShowModule('');
+
     if (selectedProduct === 'all') {
-      setFinalData(getExcelData)
+      setFinalData(getExcelData);
     } else {
       const filteredProducts = getExcelData?.filter(row =>
-        row?.product?.includes(selectedProduct)
+        row.product.includes(selectedProduct)
       );
-      setFilterData(filteredProducts);
+      setFinalData(filteredProducts);
     }
   };
 
   const handleModuleChange = (e) => {
     const selectedModule = e.target.value;
     setShowModule(selectedModule);
-    if (showProduct) {
-      const filteredModules = filterData?.filter(row =>
+
+    if (selectedModule) {
+      const filteredModules = finalData?.filter(row =>
         row.module.includes(selectedModule) && row.product === showProduct
       );
       setFinalData(filteredModules);
@@ -156,131 +157,145 @@ const Dashboard = () => {
   return (
     <Grid container spacing={2}>
       {loading && <FullScreenLoader />}
-      <Grid item xs={12}>
-        <Card sx={{ p: 3 }}>
-          <Typography variant="h6" component="h2" sx={{ ...gridHeader }}>
-            Test Cases Data
-          </Typography>
-          <Grid container justifyContent="space-between" spacing={2}>
-
+      {error ? (
+        <Typography sx={{ mt: 10, ml: 10 }}>{error}</Typography>
+      ) : (
+        <Grid item xs={12}>
+          <Card sx={{ p: 3 }}>
+            <Typography variant="h6" component="h2" sx={{ ...gridHeader }}>
+              Test Cases Data
+            </Typography>
+            <Grid container justifyContent="space-between" spacing={2}>
+              <Grid item>
+                <TextField
+                  variant="standard"
+                  type="text"
+                  label="Global Search"
+                  value={globalSearch}
+                  onChange={handleGlobalSearch}
+                  sx={{ ...TextFieldStyle }}
+                  InputProps={{
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        {globalSearch?.length ? (
+                          <Tooltip title="Clear" placement="top" sx={{ cursor: 'pointer' }}>
+                            <ClearIcon onClick={clearGlobalSearchClick} />
+                          </Tooltip>
+                        ) : (
+                          <Tooltip title="global Search for below Table data" placement="top" sx={{ cursor: 'pointer' }}>
+                            <SearchIcon />
+                          </Tooltip>
+                        )}
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+              </Grid>
+              <Grid item>
+                {showProduct ? (
+                  <Tooltip title="Clear" placement="top">
+                    <ClearIcon sx={{ ...headerIcons }} onClick={handleClickClear} />
+                  </Tooltip>
+                ) : (
+                  <Tooltip
+                    title="Filter the Products and Modules"
+                    placement="top"
+                  >
+                    <FilterListIcon sx={{ ...headerIcons }} />
+                  </Tooltip>
+                )}
+                <CustomeSelect
+                  name="Select Product"
+                  value={showProduct}
+                  uniqueValues={uniqueProductValues}
+                  handleChange={handleProductChange}
+                  show={true}
+                />
+                <CustomeSelect
+                  name="Select Module"
+                  value={showModule}
+                  uniqueValues={uniqueModuleValues}
+                  handleChange={handleModuleChange}
+                />
+              </Grid>
+            </Grid>
             {getExcelData.length > 0 && (
+              <Box sx={{ ...datagridBox }}>
+                <Datagrid
+                  finalData={finalData}
+                  executeValues={executeValues}
+                  handleExecuteChange={handleExecuteChange}
+                  loading={loading}
+                  handleHeaderExecuteChange={handleHeaderExecuteChange}
+                  uniqueExecute={uniqueExecute}
+                />
+              </Box>
+            )}
+            {getExcelData.length === 0 && (
               <>
-                <Grid item>
-                  <TextField
-                    variant="standard"
-                    type="text"
-                    label="Global Search"
-                    value={globalSearch}
-                    onChange={handleGlobalSearch}
-                    sx={{ ...TextFieldStyle }}
-                    InputProps={{
-                      endAdornment: (
-                        <InputAdornment position="end">
-                          {
-                            globalSearch?.length ?
-                              <Tooltip title="Clear" placement="top">
-                                <ClearIcon onClick={clearGlobalSearchClick} />
-                              </Tooltip>
-                              :
-                              <Tooltip title="global Search for below Table data" placement="top">
-                                <SearchIcon />
-                              </Tooltip>
-                          }
-                        </InputAdornment>
-                      )
-                    }}
-                  />
-                </Grid>
-                <Grid item>
-                  {showProduct ? (
-                    <Tooltip title="Clear" placement="top">
-                      <ClearIcon sx={{ ...headerIcons }} onClick={handleClickClear} />
+                <CardContent>
+                  <Typography gutterBottom>
+                    This feature allows users to clone a repository from
+                    <b>`GitHub`</b>
+                    to their local machine and fetch any updates made to the repository.
+                    <br />
+                    By utilizing Git commands like
+                    <b>`git clone`</b>
+                    and
+                    <b>`git fetch`</b>,
+                    users can maintain an up-to-date local copy of the repository, enabling collaboration and seamless integration of changes.
+                    <br />
+                    Click the
+                    <b>`Clone and Fetch`</b>
+                    button below to initiate the process.
+                  </Typography>
+                </CardContent>
+                <CardActions>
+                  <Grid item xs={12} sm={6} md={2}>
+                    <Tooltip title="Clone and Fetch files from Github" placement="top">
+                      <Button
+                        variant="contained"
+                        onClick={handleUpdateExcelMutation}
+                        fullWidth
+                      >
+                        Clone and Fetch
+                      </Button>
                     </Tooltip>
-                  ) : (
-                    <Tooltip title="Filter the Products and Modules" placement="top">
-                      <FilterListIcon sx={{ ...headerIcons }} />
-                    </Tooltip>
-                  )}
-                  <CustomeSelect
-                    name="Select Product"
-                    value={showProduct}
-                    uniqueValues={uniqueProductValues}
-                    handleChange={handleProductChange}
-                    show={true}
-                  />
-                  <CustomeSelect
-                    name="Select Module"
-                    value={showModule}
-                    uniqueValues={uniqueModuleValues}
-                    handleChange={handleModuleChange}
-                  />
-                </Grid>
+                  </Grid>
+                </CardActions>
               </>
             )}
-          </Grid>
-          {getExcelData.length > 0 && (
-            <Box sx={{ ...datagridBox }}>
-              <Datagrid
-                finalData={finalData}
-                executeValues={executeValues}
-                handleExecuteChange={handleExecuteChange}
-                loading={loading}
-                handleHeaderExecuteChange={handleHeaderExecuteChange}
-                uniqueExecute={uniqueExecute}
-              />
-            </Box>
-          )}
-          {getExcelData.length === 0 && (
-            <>
-              <CardContent>
-                <Typography gutterBottom>
-                  This feature allows users to clone a repository from
-                  <b>`GitHub`</b>
-                  to their local machine and fetch any updates made to the repository.
-                  <br />
-                  By utilizing Git commands like
-                  <b>`git clone`</b>
-                  and
-                  <b>`git fetch`</b>,
-                  users can maintain an up-to-date local copy of the repository, enabling collaboration and seamless integration of changes.
-                  <br />
-                  Click the
-                  <b>`Clone and Fetch`</b>
-                  button below to initiate the process.
-                </Typography>
-              </CardContent>
-              <CardActions>
+            {getExcelData.length > 0 && (
+              <Grid container spacing={2}>
                 <Grid item xs={12} sm={6} md={2}>
-                  <Tooltip title="Clone and Fetch files from Github" placement="top">
-                    <Button variant="contained" onClick={handleUpdateExcelMutation} fullWidth>
-                      Clone and Fetch
+                  <Tooltip title="upload excel to local machine" placement="top">
+                    <Button
+                      variant="contained"
+                      onClick={handleUpdateExcelMutation}
+                      fullWidth
+                    >
+                      Update Excel
                     </Button>
                   </Tooltip>
                 </Grid>
-              </CardActions>
-            </>
-          )}
-          {getExcelData.length > 0 && (
-            <Grid container spacing={2}>
-              <Grid item xs={12} sm={6} md={2}>
-                <Tooltip title="upload excel to local machine" placement="top">
-                  <Button variant="contained" onClick={handleUpdateExcelMutation} fullWidth>
-                    Update Excel
-                  </Button>
-                </Tooltip>
+                <Grid item xs={12} sm={6} md={2}>
+                  <Tooltip title="Execute Batch files" placement="top">
+                    <Button
+                      variant="contained"
+                      onClick={handleUpdateExcelMutation}
+                      fullWidth
+                    >
+                      Execute Batch job
+                    </Button>
+                  </Tooltip>
+                </Grid>
               </Grid>
-              <Grid item xs={12} sm={6} md={2}>
-                <Tooltip title="Execute Batch files" placement="top">
-                  <Button variant="contained" onClick={handleUpdateExcelMutation} fullWidth>
-                    Execute Batch job
-                  </Button>
-                </Tooltip>
-              </Grid>
-            </Grid>
-          )}
-        </Card>
-      </Grid>
+            )}
+          </Card>
+        </Grid>
+      )}
     </Grid>
+
   );
 };
 
