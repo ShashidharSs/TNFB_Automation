@@ -23,7 +23,7 @@ const Dashboard = () => {
   const [uniqueExecute, setUniqueExecute] = useState('');
   const [globalSearch, setGlobalSearch] = useState('');
   const uniqueProductValues = uniqValues(getExcelData, 'product');
-  const uniqueModuleValues = uniqValues(getExcelData, 'module');
+  const uniqueModuleValues = uniqValues(filterData, 'module');
 
   useEffect(() => {
     const excelDataQuery = async () => {
