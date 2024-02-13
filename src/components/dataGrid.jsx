@@ -39,7 +39,7 @@ const Datagrid = ({ finalData, executeValues, handleExecuteChange, handleHeaderE
 
     const noRowsOverlay = () => (
         <Stack sx={noRowsOverlayStackStyles}>
-            {finalData.length === 0 && 'No Records Found'}
+            {finalData?.length === 0 && 'No Records Found'}
         </Stack>
     );
 
@@ -82,7 +82,7 @@ const Datagrid = ({ finalData, executeValues, handleExecuteChange, handleHeaderE
             disableExtendRowFullWidth={true}
             slots={{ noRowsOverlay }}
             disableColumnMenu={true}
-        // getRowHeight={() => "auto"}
+            getRowHeight={() => "auto"}
         />
     );
 }

@@ -108,7 +108,7 @@ const headerIcons = {
 }
 
 const datagridBox = {
-    height: 370,
+    height: 430,
     width: '100%',
     mb: 2
 };

@@ -21,8 +21,8 @@ const Dashboard = () => {
   const [executeValues, setExecuteValues] = useState({});
   const [uniqueExecute, setUniqueExecute] = useState('');
   const [globalSearch, setGlobalSearch] = useState('');
+  const [allModules, setAllModules] = useState([]);
   const uniqueProductValues = uniqValues(getExcelData, 'product');
-  const uniqueModuleValues = uniqValues(finalData, 'module');
 
   useEffect(() => {
     const excelDataQuery = async () => {
@@ -40,8 +40,10 @@ const Dashboard = () => {
           product: row[6].charAt(0).toUpperCase() + row[6].slice(1) || '',
           module: row[7].charAt(0).toUpperCase() + row[7].slice(1) || ''
         }));
+        const modules = uniqValues(rowsData, 'module');
         setGetExcelData(rowsData);
         setFinalData(rowsData);
+        setAllModules(modules);
       } catch (error) {
         setError(`Error fetching data: ${error?.message}`);
       } finally {
@@ -64,6 +66,8 @@ const Dashboard = () => {
       );
       setFinalData(filteredProducts);
     }
+    const modulesForSelectedProduct = uniqValues(getExcelData.filter(row => row.product === selectedProduct), 'module');
+    setAllModules(modulesForSelectedProduct);
   };
 
   const handleModuleChange = (e) => {
@@ -71,10 +75,15 @@ const Dashboard = () => {
     setShowModule(selectedModule);
 
     if (selectedModule) {
-      const filteredModules = finalData?.filter(row =>
-        row.module.includes(selectedModule) && row.product === showProduct
+      const filteredData = getExcelData.filter(row =>
+        row.module === selectedModule && row.product === showProduct
       );
-      setFinalData(filteredModules);
+      setFinalData(filteredData);
+    } else {
+      const filteredProducts = getExcelData.filter(row =>
+        row.product === showProduct
+      );
+      setFinalData(filteredProducts);
     }
   };
 
@@ -214,12 +223,12 @@ const Dashboard = () => {
                 <CustomeSelect
                   name="Select Module"
                   value={showModule}
-                  uniqueValues={uniqueModuleValues}
+                  uniqueValues={allModules}
                   handleChange={handleModuleChange}
                 />
               </Grid>
             </Grid>
-            {getExcelData.length > 0 && (
+            {getExcelData?.length > 0 && (
               <Box sx={{ ...datagridBox }}>
                 <Datagrid
                   finalData={finalData}
@@ -231,7 +240,7 @@ const Dashboard = () => {
                 />
               </Box>
             )}
-            {getExcelData.length === 0 && (
+            {getExcelData?.length === 0 && (
               <>
                 <CardContent>
                   <Typography gutterBottom>
@@ -265,7 +274,7 @@ const Dashboard = () => {
                 </CardActions>
               </>
             )}
-            {getExcelData.length > 0 && (
+            {getExcelData?.length > 0 && (
               <Grid container spacing={2}>
                 <Grid item xs={12} sm={6} md={2}>
                   <Tooltip title="upload excel to local machine" placement="top">
